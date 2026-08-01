@@ -1,242 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Christopher Goel</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <script>
-  $(document).ready(function(){
-    // Add smooth scrolling to all links
-    $("a").on('click', function(event) {
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scroll Eclipse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lancelot&display=swap" rel="stylesheet">
 
-      // Make sure this.hash has a value before overriding default behavior
-      if (this.hash !== "") {
-        // Prevent default anchor click behavior
-        event.preventDefault();
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        // Store hash
-        var hash = this.hash;
+html, body {
+    height: 300vh; /* Gives room to scroll */
+    overflow-x: hidden;
+    background: #fff;
+    font-family: sans-serif;
+}
 
-        // Using jQuery's animate() method to add smooth page scroll
-        // The optional number (800) specifies the number of milliseconds it takes to scroll to the specified area
-        $('html, body').animate({
-          scrollTop: $(hash).offset().top
-        }, 800, function(){
-    
-          // Add hash (#) to URL when done scrolling (default click behavior)
-          window.location.hash = hash;
-        });
-      } // End if
-    });
-  });
-  </script>
+.scene {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    perspective: 1500px;
+    background-color: #fff;
+}
 
-  <!-- CSS  -->
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" 
-    rel="stylesheet">
-  <link href="css/materialize.css" type="text/css" rel="stylesheet" 
-    media="screen,projection"/>
-  <link href="css/style.css" type="text/css" rel="stylesheet" 
-    media="screen,projection"/>
+.scene-background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    z-index: 0;
+    user-select: none;
+    pointer-events: none;
+}
+
+/* Black circle */
+/* Spinning vinyl record */
+.circle {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+
+    background:
+        /* center spindle hole */
+        radial-gradient(circle at center,
+            #bdbdbd 0 2px,
+            #111 3px 10px,
+            #444 11px 11.5px,
+            #000 12px 50px,
+            transparent 51px),
+
+        /* paper label */
+        radial-gradient(circle at center,
+            #2b2b2b 0 48px,
+            #1b1b1b 49px 62px,
+            transparent 63px),
+
+        /* grooves */
+        repeating-radial-gradient(circle at center,
+            #050505 63px 64px,
+            #151515 64px 65px,
+            #050505 65px 67px),
+
+        /* vinyl base */
+        radial-gradient(circle at 30% 30%,
+            #444,
+            #111 35%,
+            #000 100%);
+
+    box-shadow:
+        inset -25px -25px 40px rgba(255,255,255,0.08),
+        inset 20px 20px 35px rgba(0,0,0,0.7),
+        0 8px 30px rgba(0,0,0,0.2);
+
+    animation: spin 3s linear infinite;
+    will-change: transform;
+
+}
+
+.circle.paused {
+    animation-play-state: paused;
+}
+
+@keyframes spin {
+    from {
+        transform: translate(-50%, -50%) rotate(0deg);
+    }
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+.label {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background: rgb(76 123 156);
+    opacity: 80%;
+    border: 2px solid #555;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font: 600 11px sans-serif;
+    letter-spacing: 2px;
+    text-align: center;
+    z-index: 2;
+}
+
+.label::after {
+    content: "";
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: silver;
+}
+
+.music-toggle {
+    position: absolute;
+    width: 58px;
+    height: 58px;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    border: 1px solid rgba(255,255,255,0.42);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.14);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow:
+        0 8px 24px rgba(0,0,0,0.32),
+        inset 0 1px 0 rgba(255,255,255,0.25);
+    cursor: pointer;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    transition: transform 160ms ease, background 160ms ease, opacity 160ms ease;
+}
+
+.music-toggle:hover {
+    background: rgba(255,255,255,0.22);
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.music-toggle:focus-visible {
+    outline: 3px solid rgba(76, 123, 156, 0.9);
+    outline-offset: 4px;
+}
+
+.music-toggle::before {
+    content: "";
+    display: block;
+    width: 0;
+    height: 0;
+    margin-left: 4px;
+    border-top: 13px solid transparent;
+    border-bottom: 13px solid transparent;
+    border-left: 20px solid currentColor;
+}
+
+.music-toggle.playing::before {
+    width: 18px;
+    height: 24px;
+    margin-left: 0;
+    border-top: 0;
+    border-bottom: 0;
+    border-left: 6px solid currentColor;
+    border-right: 6px solid currentColor;
+}
+
+.music-toggle.dismissed {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.scroll-cue {
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 220px);
+    width: 88px;
+    height: 88px;
+    transform: translate(-50%, 12px);
+    border: 0;
+    background: transparent;
+    color: #000;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 3;
+    transition: opacity 620ms ease, transform 620ms ease;
+}
+
+.scroll-cue.visible {
+    opacity: 0.72;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+    transition-delay: 1s;
+}
+
+.scroll-cue svg,
+.scroll-cue img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.scroll-cue img {
+    object-fit: contain;
+    transform: rotate(90deg);
+}
+
+.scroll-cue svg {
+    overflow: visible;
+}
+
+.scroll-cue path {
+    fill: currentColor;
+}
+
+/* White rectangle that rises upward */
+.rectangle {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    --sleeve-depth: 12px;
+    --sleeve-half-depth: calc(var(--sleeve-depth) / 2);
+
+    left: 50%;
+    top: 50%;
+
+    transform-style: preserve-3d;
+    will-change: transform;
+    z-index: 10;
+}
+
+/* Front and back covers */
+
+.cover-face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    box-shadow:
+        0 0 18px rgba(0,0,0,0.34),
+        0 0 42px rgba(0,0,0,0.22),
+        0 0 72px rgba(0,0,0,0.12);
+}
+
+/* .front {
+    background: #d00000;
+    transform: translateZ(4px);
+} */
+.front {
+    background-image: url("images/1.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    transform: translateZ(var(--sleeve-half-depth));
+}
+
+.back {
+    background-image: url("images/3.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    transform: rotateY(180deg) translateZ(var(--sleeve-half-depth));
+}
+
+/* Spine */
+
+.spine {
+    position: absolute;
+
+    width: var(--sleeve-depth);
+    height: 400px;
+
+    left: calc(var(--sleeve-half-depth) * -1);
+    top: 0;
+
+    background: rgb(86, 124, 158);
+
+    transform-origin: center center;
+    transform: rotateY(-90deg);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+}
+
+/* Spine text */
+
+.spine span {
+    color: rgb(242, 239, 246);
+
+    font-family: "Lancelot", Georgia, serif;
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    word-spacing: 0.28em;
+
+    white-space: nowrap;
+
+    transform: rotate(180deg) rotate(90deg);
+}
+</style>
 </head>
 <body>
-  <nav id="home" class="white" role="navigation">
-    <div class="nav-wrapper container">
-      <ul class="hide-on-med-and-down">
-        <li><a href="#home">Home</a></li>
-        <li><a href="#experience">Experience</a></li>
-        <li><a href="#projects">Projects</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ul>
 
-      <ul id="nav-mobile" class="sidenav">
-        <li><a href="#">Navbar Link</a></li>
-      </ul>
-      <a href="#" data-target="nav-mobile" class="sidenav-trigger">
-        <i class="material-icons">menu</i>
-      </a>
-    </div>
-  </nav>
-
-  <div id="index-banner" class="parallax-container">
-    <div class="section no-pad-bot">
-      <div class="container">
-        <br><br>
-        <h1 class="header center teal-text text-lighten-2">Christopher Goel</h1>
-        <div class="row center">
-          <h5 class="header col s12 light">
-            I am a Toronto-based software developer, currently working as a 
-            Machine Learning Intern for Qualcomm.
-          </h5>
-        </div>
-        <div class="row center">
-          <a href="http://youtube.com/dudeperfect" id="download-button" 
-            class="btn-large waves-effect waves-light teal lighten-1">
-            View Portfolio
-          </a>
-        </div>
-        <br><br>
-
-      </div>
-    </div>
-    <div class="parallax"><img src="background1.jpg" alt="Unsplashed background img 1"></div>
-  </div>
-
-  <div id="experience" class="container col s12">
-    <h4 class="center">Experience</h4>
-    <div class="row valign-wrapper card-panel grey lighten-5">
-        <img
-        src="img/qc.png" 
-        class="col s1 circle responsive-img"> <!-- notice the "circle" class -->
-        <div class="col s7">
-          <span class="black-text">
-            Software Engineering Intern, Machine Learning
-          </span>
-        </div>
-        <div class="col s2">
-          <span class="black-text">
-            Summer, 2020
-          </span>
-        </div>
-        <div class="col s2">
-          <span class="black-text">
-            Austin, TX
-          </span>
+<div class="scene">
+    <img class="scene-background" src="images/backgrounds/3.png" alt="" width="2380" height="2380">
+    <div class="circle">
+        <div class="label">
+            <div class="title">TWO OF US</div>
         </div>
     </div>
-    <div class="row valign-wrapper card-panel grey lighten-5">
-      <img
-      src="img/qc.png" 
-      class="col s1 circle responsive-img"> <!-- notice the "circle" class -->
-      <div class="col s7">
-        <span class="black-text">
-          Software Engineering Intern, Machine Learning
-        </span>
-      </div>
-      <div class="col s2">
-        <span class="black-text">
-          Summer, 2019
-        </span>
-      </div>
-      <div class="col s2">
-        <span class="black-text">
-          Toronto, ON
-        </span>
-      </div>
+    <button class="music-toggle" type="button" aria-label="Play music" aria-pressed="false"></button>
+    <button class="scroll-cue" type="button" aria-label="Scroll down">
+        <!-- Option: <img src="images/pointinghand.svg" alt=""> -->
+        <svg viewBox="0 0 96 96" aria-hidden="true" focusable="false">
+            <path d="M48 82 C42 70 32 58 18 47 C30 52 41 54 48 54 C55 54 66 52 78 47 C64 58 54 70 48 82 Z" />
+        </svg>
+    </button>
+    <div class="rectangle">
+        <div class="spine">
+            <span>Chris and Kate's Wedding</span>
+        </div>
+
+        <div class="cover-face front"></div>
+        <div class="cover-face back"></div>
     </div>
-    <div class="row valign-wrapper card-panel grey lighten-5">
-      <img
-      src="img/qc.png" 
-      class="col s1 circle responsive-img"> <!-- notice the "circle" class -->
-      <div class="col s7">
-        <span class="black-text">
-          Software Engineering Intern, Android
-        </span>
-      </div>
-      <div class="col s2">
-        <span class="black-text">
-          Summer, 2018
-        </span>
-      </div>
-      <div class="col s2">
-        <span class="black-text">
-          Toronto, ON
-        </span>
-      </div>
-    </div>
-  </div>
+</div>
 
+<audio id="music" preload="auto">
+    <source src="audio/two-of-us-trimmed.flac" type="audio/flac">
+</audio>
 
-  <div class="container">
-    <div class="section">
+<script>
+const rectangle = document.querySelector(".rectangle");
+const vinyl = document.querySelector(".circle");
+const musicButton = document.querySelector(".music-toggle");
+const scrollCue = document.querySelector(".scroll-cue");
+const music = document.getElementById("music");
+let hasStartedMusic = false;
 
-      <!--   Icon Section   -->
-      <div class="row">
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center brown-text"><i class="material-icons">flash_on</i></h2>
-            <h5 class="center">Speeds up development</h5>
+function updateAnimation() {
+    const maxScroll = document.body.scrollHeight - window.innerHeight;
+    const progress = Math.min(window.scrollY / maxScroll, 1);
 
-            <p class="light">We did most of the heavy lifting for you to provide a default stylings that incorporate our custom components. Additionally, we refined animations and transitions to provide a smoother experience for developers.</p>
-          </div>
-        </div>
+    let offset;
+    let rotation;
 
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center brown-text"><i class="material-icons">group</i></h2>
-            <h5 class="center">User Experience Focused</h5>
+    if (progress < 0.5) {
+        const p = progress / 0.5;
 
-            <p class="light">By utilizing elements and principles of Material Design, we were able to create a framework that incorporates components and animations that provide more feedback to users. Additionally, a single underlying responsive system across all platforms allow for a more unified user experience.</p>
-          </div>
-        </div>
+        offset = (1 - p) * window.innerHeight;
+        rotation = 0;
 
-        <div class="col s12 m4">
-          <div class="icon-block">
-            <h2 class="center brown-text"><i class="material-icons">settings</i></h2>
-            <h5 class="center">Easy to work with</h5>
+        vinyl.style.visibility = "visible";
+        musicButton.style.visibility = hasStartedMusic ? "hidden" : "visible";
+        scrollCue.classList.toggle("visible", hasStartedMusic);
+    } else {
+        const p = (progress - 0.5) / 0.5;
 
-            <p class="light">We have provided detailed documentation as well as specific code examples to help new users get started. We are also always open to feedback and can answer any questions a user may have about Materialize.</p>
-          </div>
-        </div>
-      </div>
+        offset = 0;
+        rotation = p * 180;
 
-    </div>
-  </div>
+        vinyl.style.visibility = "hidden";
+        musicButton.style.visibility = "hidden";
+        scrollCue.classList.remove("visible");
+    }
 
-  <div class="container">
-    <div class="section">
-      <div class="row">
-        <div class="col s12 center">
-          <h3><i class="mdi-content-send brown-text"></i></h3>
-          <h4>Contact Us</h4>
-          <p class="left-align light">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam scelerisque id nunc nec volutpat. Etiam pellentesque tristique arcu, non consequat magna fermentum ac. Cras ut ultricies eros. Maecenas eros justo, ullamcorper a sapien id, viverra ultrices eros. Morbi sem neque, posuere et pretium eget, bibendum sollicitudin lacus. Aliquam eleifend sollicitudin diam, eu mattis nisl maximus sed. Nulla imperdiet semper molestie. Morbi massa odio, condimentum sed ipsum ac, gravida ultrices erat. Nullam eget dignissim mauris, non tristique erat. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae;</p>
-        </div>
-      </div>
-    </div>
-  </div>
+    rectangle.style.transform = `
+        translate(-50%, calc(-50% + ${offset}px))
+        rotateY(${rotation}deg)
+    `;
+}
 
-  <footer class="page-footer teal">
-    <div class="container">
-      <div class="row">
-        <div id="contact" class="col l6 s12">
-          <h5 class="white-text">Company Bio</h5>
-          <p class="grey-text text-lighten-4">We are a team of college students working on this project like it's our full time job. Any amount would help support and continue development on this project and is greatly appreciated.</p>
+updateAnimation();
+window.addEventListener("scroll", updateAnimation);
 
+function setMusicState(isPlaying) {
+    musicButton.classList.toggle("playing", isPlaying);
+    musicButton.setAttribute("aria-label", isPlaying ? "Pause music" : "Play music");
+    musicButton.setAttribute("aria-pressed", String(isPlaying));
+    vinyl.classList.toggle("paused", !isPlaying);
 
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Settings</h5>
-          <ul>
-            <li><a class="white-text" href="#!">Link 1</a></li>
-            <li><a class="white-text" href="#!">Link 2</a></li>
-            <li><a class="white-text" href="#!">Link 3</a></li>
-            <li><a class="white-text" href="#!">Link 4</a></li>
-          </ul>
-        </div>
-        <div class="col l3 s12">
-          <h5 class="white-text">Connect</h5>
-          <ul>
-            <li><a class="white-text" href="#!">Link 1</a></li>
-            <li><a class="white-text" href="#!">Link 2</a></li>
-            <li><a class="white-text" href="#!">Link 3</a></li>
-            <li><a class="white-text" href="#!">Link 4</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-    <div class="footer-copyright">
-      <div class="container">
-        Made by <a class="brown-text text-lighten-3">Christopher Goel</a>
-      </div>
-    </div>
-  </footer>
+    if (isPlaying) {
+        hasStartedMusic = true;
+        musicButton.classList.add("dismissed");
+        musicButton.style.visibility = "hidden";
+        scrollCue.classList.add("visible");
+    }
+}
 
+setMusicState(false);
 
-  <!--  Scripts-->
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src="js/materialize.js"></script>
-  <script src="js/init.js"></script>
+musicButton.addEventListener("click", () => {
+    if (music.paused) {
+        music.play().catch(() => setMusicState(false));
+    } else {
+        music.pause();
+    }
+});
 
-  </body>
+scrollCue.addEventListener("click", () => {
+    window.scrollTo({
+        top: window.innerHeight,
+        behavior: "smooth"
+    });
+});
+
+music.addEventListener("play", () => setMusicState(true));
+music.addEventListener("pause", () => setMusicState(false));
+music.addEventListener("ended", () => setMusicState(false));
+</script>
+
+</body>
 </html>
